@@ -20,7 +20,7 @@ def downloader(URLS):
 
     ydl_opts = {
         'format': 'bestaudio/best',
-        'outtmpl': 'data/%(title)s.%(ext)s',
+        'outtmpl': 'data/audio/audio.%(ext)s',
         'match_filter': less_than_a_halfhour,
         "ffmpeg_location": str(FFMPEG_DIR),
     

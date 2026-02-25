@@ -7,7 +7,11 @@
 # 5. CLEAN UP FILES (.mp3,transcription,and summary)
 
 from download import downloader
+from transcribe import transcript
+from pathlib import Path
+
+audioPath="data/audio/audio.mp3"
 url=input("Enter a valid URL!")
 
 downloader(url)
-
+transcript(audioPath)
