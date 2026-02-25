@@ -13,7 +13,7 @@ from cleanup import clean_data_folder
 from pathlib import Path
 
 audioPath="data/audio/audio.mp3"
-url=input("Enter a valid URL!")
+url=input("Enter a valid URL!- ")
 
 downloader(url)
 transcript(audioPath)
