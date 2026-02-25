@@ -8,6 +8,8 @@
 
 from download import downloader
 from transcribe import transcript
+from summarize import summary
+from cleanup import clean_data_folder
 from pathlib import Path
 
 audioPath="data/audio/audio.mp3"
@@ -15,3 +17,9 @@ url=input("Enter a valid URL!")
 
 downloader(url)
 transcript(audioPath)
+summary()
+
+with open("data/sum.txt", "r", encoding="utf-8") as f:
+    print(f.read())
+
+clean_data_folder()
