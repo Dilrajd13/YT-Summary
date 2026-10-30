@@ -152,8 +152,8 @@
   </section>
 
   <ol id="steps" class="card steps" hidden>
-    <li data-step="download"><span class="icon"></span><span class="label">Downloading audio</span><span class="detail"></span></li>
-    <li data-step="transcribe"><span class="icon"></span><span class="label">Transcribing with Whisper</span><span class="detail"></span></li>
+    <li data-step="find"><span class="icon"></span><span class="label">Finding video</span><span class="detail"></span></li>
+    <li data-step="transcript"><span class="icon"></span><span class="label">Getting transcript</span><span class="detail"></span></li>
     <li data-step="summarize"><span class="icon"></span><span class="label">Summarizing with GPT</span><span class="detail"></span></li>
   </ol>
 
@@ -187,7 +187,7 @@
 
 <script>
 const $ = (id) => document.getElementById(id);
-const STEPS = ["download", "transcribe", "summarize"];
+const STEPS = ["find", "transcript", "summarize"];
 const VERDICTS = { watch: "Worth watching", maybe: "Maybe", skip: "Skip it" };
 
 let job = null;
@@ -235,6 +235,13 @@ async function copy(button, text) {
   setTimeout(() => (button.textContent = original), 1500);
 }
 
+function transcriptStatus() {
+  if (job.method === "download") return "No captions, downloading audio";
+  if (job.method === "whisper") return `Transcribing with Whisper (${job.device})`;
+  if (job.method === "done") return job.source;
+  return "Checking for captions";
+}
+
 function renderSteps() {
   const now = Date.now();
   const current = job.status === "done" ? STEPS.length : STEPS.indexOf(job.step);
@@ -246,12 +253,15 @@ function renderSteps() {
 
     if (index < current) {
       li.className = "done";
-      detail.textContent = formatTime(((stepFinishedAt[step] || now) - stepStartedAt[step]) / 1000);
+      const took = formatTime(((stepFinishedAt[step] || now) - stepStartedAt[step]) / 1000);
+      detail.textContent = step === "transcript" && job.source ? `${job.source}  ·  ${took}` : took;
     } else if (index === current) {
       li.className = job.status === "error" ? "failed" : "active";
-      const elapsed = formatTime((now - stepStartedAt[step]) / 1000);
-      detail.textContent = step === "download" && job.percent != null && job.status !== "error"
-        ? `${job.percent}%  ·  ${elapsed}` : elapsed;
+      const parts = [];
+      if (step === "transcript" && job.status !== "error") parts.push(transcriptStatus());
+      if (job.percent != null && job.status !== "error") parts.push(job.percent + "%");
+      parts.push(formatTime((now - stepStartedAt[step]) / 1000));
+      detail.textContent = parts.filter(Boolean).join("  ·  ");
     } else {
       detail.textContent = job.status === "queued" && index === 0 ? "Waiting for the previous video..." : "";
     }

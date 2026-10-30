@@ -1,14 +1,16 @@
 # YT-Summary
 ## Take a Youtube video and summarize it to check if it is worth watching or not.
 
-<img width="870" height="1254" alt="image" src="https://github.com/user-attachments/assets/8cc955f5-3e49-4662-bbba-01adf96ef8ec" />
+<img width="870" height="1254" alt="image" src="https://github.com/user-attachments/assets/73c4c39f-00a6-4bef-a7f5-8c53866617cc" />
 
 
 Python- User input (youtube link) from the web page or console
 
 yt-dlp- Find video -> download audio
 
-OpenAI Whisper Audio Transcriber- -> Transcribe audio -> transcript
+YouTube captions- -> if the video has captions use those as the transcript (takes a few seconds)
+
+OpenAI Whisper Audio Transcriber (faster-whisper)- -> if there are no captions, transcribe audio -> transcript
 
 OpenAI GPT-5 mini API- -> Summarize transcript -> Summary + verdict (Worth watching / Maybe / Skip it)
 
@@ -25,7 +27,7 @@ The app now has a local web page so you don't have to use the console. Paste a l
 
 This currently needs to be run locally and requires a OpenAI API key from user
 
-*Performance currently is based entirely on system specs* (a 6 min video takes about 2 min to transcribe)
+*Performance currently is based entirely on system specs*. Most videos have captions so they're done in about 30 sec. If Whisper has to transcribe, it uses your NVIDIA GPU if you have one (a 6 min video took 15 sec on an RTX 2060), otherwise the CPU (about 80 sec)
 
 Use the .env.example file as reference to create a .env file that includes your API key
 

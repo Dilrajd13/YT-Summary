@@ -1,0 +1,4 @@
+# Optional: lets Whisper run on an NVIDIA GPU (much faster). run.bat installs these if it finds one.
+# Without them (or without an NVIDIA GPU) Whisper just uses the CPU.
+nvidia-cublas-cu12>=12.9
+nvidia-cudnn-cu12>=9,<10

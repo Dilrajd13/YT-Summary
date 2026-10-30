@@ -12,13 +12,19 @@ if not exist ".venv\Scripts\python.exe" (
         exit /b 1
     )
     .venv\Scripts\python.exe -m pip install --upgrade pip
-    .venv\Scripts\python.exe -m pip install -r requirements.txt
-    if errorlevel 1 (
-        echo Installing packages failed. Scroll up to see the error.
-        pause
-        exit /b 1
-    )
 )
+
+rem installs anything missing (quick when everything is already there)
+echo Checking packages...
+.venv\Scripts\python.exe -m pip install --quiet -r requirements.txt
+if errorlevel 1 (
+    echo Installing packages failed. Scroll up to see the error.
+    pause
+    exit /b 1
+)
+
+rem NVIDIA GPU found: add the libraries Whisper needs to use it
+where nvidia-smi >nul 2>nul && .venv\Scripts\python.exe -m pip install --quiet -r requirements-gpu.txt
 
 if not exist ".env" copy ".env.example" ".env" >nul
 
