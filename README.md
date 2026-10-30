@@ -1,7 +1,8 @@
 # YT-Summary
 ## Take a Youtube video and summarize it to check if it is worth watching or not.
 
-<!-- Add a screenshot or GIF of the app here -->
+<img width="870" height="1254" alt="image" src="https://github.com/user-attachments/assets/73c4c39f-00a6-4bef-a7f5-8c53866617cc" />
+
 
 Python- User input (youtube link) from the web page or console
 
