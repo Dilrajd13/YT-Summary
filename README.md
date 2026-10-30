@@ -1,35 +1,45 @@
 # YT-Summary
 ## Take a Youtube video and summarize it to check if it is worth watching or not.
 
-Python- User input (youtube link)
+<!-- Add a screenshot or GIF of the app here -->
 
-yt-dlp- Find video -> download mp3 audio
+Python- User input (youtube link) from the web page or console
 
-OpenAI Whisper Audio Transcripter- -> Transcribe mp3 audio -> transcript.txt
+yt-dlp- Find video -> download audio
 
-OpenAI-GPT 5.1 API- -> Summarize transcript.txt -> Summary.txt
+OpenAI Whisper Audio Transcriber- -> Transcribe audio -> transcript
+
+OpenAI GPT-5 mini API- -> Summarize transcript -> Summary + verdict (Worth watching / Maybe / Skip it)
 
 Python- User output -> delete/cleanup files
 
 HIGH LEVEL WORKFLOW/Architecture 
 <img width="1851" height="596" alt="image" src="https://github.com/user-attachments/assets/a7d2f40c-9bfe-465c-b367-89a2fb92cd14" />
 
+### UI
+
+The app now has a local web page so you don't have to use the console. Paste a link and it shows the video, live progress for each step, and the summary. You can also copy the summary or view the full transcript.
+
 ### How to Run
 
 This currently needs to be run locally and requires a OpenAI API key from user
 
-*Preformance currently is based entirely on system specs*
+*Performance currently is based entirely on system specs* (a 6 min video takes about 2 min to transcribe)
 
 Use the .env.example file as reference to create a .env file that includes your API key
 
 <img width="286" height="35" alt="image" src="https://github.com/user-attachments/assets/06c08f15-0f9f-4c04-92bf-230509075e48" />
 
+**Windows:** double-click `run.bat`. The first run installs everything (ffmpeg included), then the app opens in your browser.
 
-Run main.py and paste in youtube link and the summary will be outputted in console.
+**Mac/Linux:** `pip install -r requirements.txt` then `python src/app.py` and open http://127.0.0.1:5000
 
-### The eventual goal is to make a UI interface that makes everything more user freindly***
+You can still run main.py and paste in youtube link and the summary will be outputted in console.
 
-##Sample Run with this [video](https://www.youtube.com/watch?v=orQKfIXMiA8) Title-"You Need to Be Bored. Here's Why."
+If downloads fail with `HTTP Error 403`, update yt-dlp: `pip install -U "yt-dlp[default]"` (run.bat does this for you)
+
+## Sample Run with this [video](https://www.youtube.com/watch?v=orQKfIXMiA8) Title-"You Need to Be Bored. Here's Why."
+
 
 
 Run main.py and Enter Youtube Link
@@ -38,7 +48,7 @@ Run main.py and Enter Youtube Link
 <img width="484" height="20" alt="image" src="https://github.com/user-attachments/assets/0aea5add-56db-44d1-857e-91f1b413e5df" />
 
 
-###Outputted Summary 
+### Outputted Summary (console version) 
 
 Main idea (one line)
 - Boredom is valuable: deliberately allowing yourself to be bored (letting the brain’s “default mode network” run) helps you confront meaning, reduces dependence on phones, and can protect against anxiety, depression, and a hollow life.
