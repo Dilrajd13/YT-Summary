@@ -6,7 +6,6 @@
 
 import sys
 import threading
-import time
 import uuid
 import webbrowser
 
@@ -30,9 +29,10 @@ def run_job(job, url):
     def report(event, **data):
         if event == "step":
             job["step"] = data["step"]
-            job["step_started"] = time.time()
         elif event == "video":
             job["video"] = data["video"]
+        elif event == "method":
+            job.update(method=data["method"], device=data.get("device"), source=data.get("source"), percent=None)
         elif event == "progress":
             job["percent"] = data["percent"]
 
@@ -64,7 +64,7 @@ def start_summary():
         return jsonify(error="No OpenAI API key found. Add it to the .env file, then try again."), 400
 
     job_id = uuid.uuid4().hex
-    jobs[job_id] = {"id": job_id, "status": "queued", "step": None, "percent": None, "video": None}
+    jobs[job_id] = {"id": job_id, "status": "queued", "step": None, "method": None, "percent": None, "video": None}
     threading.Thread(target=run_job, args=(jobs[job_id], url), daemon=True).start()
     return jsonify(id=job_id)
 
