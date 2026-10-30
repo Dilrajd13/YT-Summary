@@ -1,16 +1,18 @@
-#This deletes all files used to make the summary after output to the user
+#This makes a temporary folder for each summary and deletes it after output to the user
 
+import shutil
+import tempfile
 from pathlib import Path
 
-def clean_data_folder():
-    files_to_delete = [
-        "data/audio/audio.mp3",
-        "data/text/transcript.txt",
-        "data/sum.txt"
-    ]
+from config import ROOT
 
-    for file in files_to_delete:
-        path = Path(file)
-        if path.exists():
-            path.unlink()
+JOBS_DIR = ROOT / "data" / "jobs"
 
+
+def new_job_folder() -> Path:
+    JOBS_DIR.mkdir(parents=True, exist_ok=True)
+    return Path(tempfile.mkdtemp(dir=JOBS_DIR))
+
+
+def clean_job_folder(folder):
+    shutil.rmtree(folder, ignore_errors=True)

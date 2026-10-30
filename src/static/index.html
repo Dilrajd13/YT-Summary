@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YT-Summary</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23e5484d'/><path d='M12 9.5v13l11-6.5z' fill='white'/></svg>">
+<style>
+  :root {
+    --bg: #f6f5f2;
+    --surface: #ffffff;
+    --surface-2: #f0efeb;
+    --border: #e3e1db;
+    --text: #1b1a17;
+    --muted: #6b6860;
+    --accent: #e5484d;
+    --accent-text: #ffffff;
+    --watch: #1f8a4c;
+    --watch-bg: #e6f4ec;
+    --maybe: #a5650b;
+    --maybe-bg: #fbf1df;
+    --skip: #c4323a;
+    --skip-bg: #fbe9ea;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(0 0 0 / 0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121211;
+      --surface: #1b1b19;
+      --surface-2: #242421;
+      --border: #2f2e2b;
+      --text: #ecebe7;
+      --muted: #9a978f;
+      --watch: #5cc98a;
+      --watch-bg: #16291e;
+      --maybe: #e8b04f;
+      --maybe-bg: #2c2414;
+      --skip: #f0767c;
+      --skip-bg: #2e1a1b;
+      --shadow: none;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 48px 16px 80px; }
+
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .logo { width: 36px; height: 36px; border-radius: 10px; background: var(--accent); display: grid; place-items: center; flex: none; }
+  h1 { font-size: 26px; letter-spacing: -0.02em; margin: 0; }
+  .tagline { color: var(--muted); margin: 0 0 28px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
+
+  form { display: flex; gap: 8px; padding: 8px; }
+  input[type=url] {
+    flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text);
+    font: inherit; padding: 10px 12px; outline: none;
+  }
+  input[type=url]::placeholder { color: var(--muted); }
+  form:focus-within { border-color: var(--accent); }
+  button {
+    font: inherit; font-weight: 600; cursor: pointer; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text); padding: 8px 14px;
+  }
+  button:hover { background: var(--surface-2); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); padding: 10px 18px; }
+  button.primary:hover { filter: brightness(1.08); }
+  button:disabled { opacity: 0.55; cursor: default; filter: none; }
+
+  .banner { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: var(--maybe-bg); color: var(--maybe); font-size: 14px; }
+  .banner code { font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  .error { background: var(--skip-bg); color: var(--skip); }
+
+  .video { display: flex; gap: 16px; padding: 14px; margin-top: 20px; align-items: center; }
+  .video img { width: 168px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; flex: none; background: var(--surface-2); }
+  .video h2 { font-size: 17px; line-height: 1.35; margin: 0 0 4px; }
+  .video h2 a { color: inherit; text-decoration: none; }
+  .video h2 a:hover { text-decoration: underline; }
+  .video p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .steps { list-style: none; margin: 20px 0 0; padding: 6px 16px; }
+  .steps li { display: flex; align-items: center; gap: 12px; padding: 10px 0; color: var(--muted); }
+  .steps li + li { border-top: 1px solid var(--border); }
+  .steps .label { flex: 1; }
+  .steps .detail { font-size: 14px; font-variant-numeric: tabular-nums; }
+  .steps li.active, .steps li.done { color: var(--text); }
+  .icon { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); flex: none; display: grid; place-items: center; }
+  li.active .icon { border-color: var(--accent); border-right-color: transparent; animation: spin 0.8s linear infinite; }
+  li.done .icon { border-color: var(--watch); background: var(--watch); }
+  li.done .icon::after { content: ""; width: 5px; height: 9px; border: solid var(--surface); border-width: 0 2px 2px 0; transform: translateY(-1px) rotate(45deg); }
+  li.failed .icon { border-color: var(--skip); background: var(--skip); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .verdict { margin-top: 20px; padding: 18px 20px; border-radius: 14px; }
+  .verdict .badge { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .verdict p { margin: 4px 0 0; font-size: 17px; color: var(--text); }
+  .verdict.watch { background: var(--watch-bg); color: var(--watch); }
+  .verdict.maybe { background: var(--maybe-bg); color: var(--maybe); }
+  .verdict.skip { background: var(--skip-bg); color: var(--skip); }
+
+  .summary { padding: 4px 22px 18px; margin-top: 14px; }
+  .summary h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 20px 0 6px; }
+  .summary p { margin: 0; }
+  .summary ul { margin: 0; padding-left: 20px; }
+  .summary li { margin: 3px 0; }
+  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+
+  .actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .transcript { margin-top: 14px; padding: 18px 22px; white-space: pre-wrap; color: var(--muted); max-height: 420px; overflow-y: auto; font-size: 15px; }
+
+  [hidden] { display: none !important; }
+
+  @media (max-width: 560px) {
+    main { padding-top: 28px; }
+    form { flex-direction: column; }
+    .video { flex-direction: column; align-items: stretch; }
+    .video img { width: 100%; }
+    .columns { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="logo"><svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 2.5v11l9.5-5.5z" fill="white"/></svg></div>
+    <h1>YT-Summary</h1>
+  </header>
+  <p class="tagline">Paste a YouTube link and find out if it's worth your time before you watch it.</p>
+
+  <form id="form" class="card">
+    <input id="url" type="url" placeholder="https://www.youtube.com/watch?v=..." required autocomplete="off">
+    <button id="go" class="primary" type="submit">Summarize</button>
+  </form>
+
+  <div id="no-key" class="banner" hidden>
+    No OpenAI API key found. Copy <code>.env.example</code> to <code>.env</code>, paste your key after
+    <code>OPENAI_API_KEY=</code>, then try again (no restart needed).
+  </div>
+
+  <section id="video" class="card video" hidden>
+    <img id="thumb" alt="">
+    <div>
+      <h2><a id="title" target="_blank" rel="noopener"></a></h2>
+      <p id="meta"></p>
+    </div>
+  </section>
+
+  <ol id="steps" class="card steps" hidden>
+    <li data-step="download"><span class="icon"></span><span class="label">Downloading audio</span><span class="detail"></span></li>
+    <li data-step="transcribe"><span class="icon"></span><span class="label">Transcribing with Whisper</span><span class="detail"></span></li>
+    <li data-step="summarize"><span class="icon"></span><span class="label">Summarizing with GPT</span><span class="detail"></span></li>
+  </ol>
+
+  <div id="error" class="banner error" hidden></div>
+
+  <section id="result" hidden>
+    <div id="verdict" class="verdict">
+      <div class="badge" id="verdict-label"></div>
+      <p id="verdict-reason"></p>
+    </div>
+    <div class="card summary">
+      <h3>Main idea</h3>
+      <p id="main-idea"></p>
+      <h3>Topics covered</h3>
+      <ul id="topics"></ul>
+      <h3>Quick takeaways</h3>
+      <ul id="takeaways"></ul>
+      <div class="columns">
+        <div><h3>Watch it if</h3><ul id="watch-if"></ul></div>
+        <div><h3>Skip it if</h3><ul id="skip-if"></ul></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="copy-summary" type="button">Copy summary</button>
+      <button id="toggle-transcript" type="button">Show transcript</button>
+      <button id="copy-transcript" type="button" hidden>Copy transcript</button>
+    </div>
+    <div id="transcript" class="card transcript" hidden></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const STEPS = ["download", "transcribe", "summarize"];
+const VERDICTS = { watch: "Worth watching", maybe: "Maybe", skip: "Skip it" };
+
+let job = null;
+let pollTimer = null;
+let tickTimer = null;
+let stepStartedAt = {};
+let stepFinishedAt = {};
+
+function formatTime(seconds) {
+  seconds = Math.max(0, Math.round(seconds));
+  const h = Math.floor(seconds / 3600), m = Math.floor(seconds / 60) % 60, s = seconds % 60;
+  const mm = h ? String(m).padStart(2, "0") : m;
+  return (h ? h + ":" : "") + mm + ":" + String(s).padStart(2, "0");
+}
+
+function fillList(id, items) {
+  const ul = $(id);
+  ul.replaceChildren(...items.map((text) => {
+    const li = document.createElement("li");
+    li.textContent = text;
+    return li;
+  }));
+}
+
+function summaryText(video, s) {
+  const bullets = (items) => items.map((i) => "- " + i).join("\n");
+  return [
+    video.title,
+    video.url,
+    "",
+    `Verdict: ${VERDICTS[s.verdict]} - ${s.verdict_reason}`,
+    "",
+    "Main idea", s.main_idea, "",
+    "Topics covered", bullets(s.topics), "",
+    "Quick takeaways", bullets(s.takeaways), "",
+    "Watch it if", bullets(s.watch_if), "",
+    "Skip it if", bullets(s.skip_if),
+  ].join("\n");
+}
+
+async function copy(button, text) {
+  await navigator.clipboard.writeText(text);
+  const original = button.textContent;
+  button.textContent = "Copied!";
+  setTimeout(() => (button.textContent = original), 1500);
+}
+
+function renderSteps() {
+  const now = Date.now();
+  const current = job.status === "done" ? STEPS.length : STEPS.indexOf(job.step);
+  for (const li of $("steps").children) {
+    const step = li.dataset.step;
+    const index = STEPS.indexOf(step);
+    const detail = li.querySelector(".detail");
+    li.className = "";
+
+    if (index < current) {
+      li.className = "done";
+      detail.textContent = formatTime(((stepFinishedAt[step] || now) - stepStartedAt[step]) / 1000);
+    } else if (index === current) {
+      li.className = job.status === "error" ? "failed" : "active";
+      const elapsed = formatTime((now - stepStartedAt[step]) / 1000);
+      detail.textContent = step === "download" && job.percent != null && job.status !== "error"
+        ? `${job.percent}%  ·  ${elapsed}` : elapsed;
+    } else {
+      detail.textContent = job.status === "queued" && index === 0 ? "Waiting for the previous video..." : "";
+    }
+  }
+}
+
+function render() {
+  // remember when each step started/finished (client clock) for the timers
+  const now = Date.now();
+  if (job.step && !stepStartedAt[job.step]) {
+    for (const step of STEPS.slice(0, STEPS.indexOf(job.step))) {
+      stepStartedAt[step] ||= now;
+      stepFinishedAt[step] ||= now;
+    }
+    stepStartedAt[job.step] = now;
+  }
+  if (job.status === "done") STEPS.forEach((step) => (stepFinishedAt[step] ||= now));
+
+  $("steps").hidden = false;
+  renderSteps();
+
+  if (job.video) {
+    const v = job.video;
+    $("video").hidden = false;
+    $("thumb").src = v.thumbnail || "";
+    $("title").textContent = v.title;
+    $("title").href = v.url;
+    $("meta").textContent = [v.channel, v.duration ? formatTime(v.duration) : null].filter(Boolean).join("  ·  ");
+  }
+
+  if (job.status === "error") {
+    $("error").hidden = false;
+    $("error").textContent = job.error;
+  }
+
+  if (job.status === "done") {
+    const s = job.summary;
+    $("verdict").className = "verdict " + s.verdict;
+    $("verdict-label").textContent = VERDICTS[s.verdict];
+    $("verdict-reason").textContent = s.verdict_reason;
+    $("main-idea").textContent = s.main_idea;
+    fillList("topics", s.topics);
+    fillList("takeaways", s.takeaways);
+    fillList("watch-if", s.watch_if);
+    fillList("skip-if", s.skip_if);
+    $("transcript").textContent = job.transcript;
+    $("result").hidden = false;
+  }
+}
+
+function finish() {
+  clearInterval(pollTimer);
+  clearInterval(tickTimer);
+  $("go").disabled = false;
+  $("url").disabled = false;
+}
+
+async function poll() {
+  try {
+    const res = await fetch(`/api/jobs/${job.id}`);
+    job = await res.json();
+  } catch {
+    job = { ...job, status: "error", error: "Lost connection to the app. Is the YT-Summary window still open?" };
+  }
+  render();
+  if (job.status === "done" || job.status === "error") finish();
+}
+
+function reset() {
+  stepStartedAt = {};
+  stepFinishedAt = {};
+  for (const id of ["video", "steps", "error", "result", "transcript", "copy-transcript"]) $(id).hidden = true;
+  $("toggle-transcript").textContent = "Show transcript";
+  $("thumb").removeAttribute("src");
+}
+
+$("form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  reset();
+  $("go").disabled = true;
+  $("url").disabled = true;
+
+  const res = await fetch("/api/summarize", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url: $("url").value }),
+  }).catch(() => null);
+  const data = res ? await res.json() : { error: "Couldn't reach the app. Is the YT-Summary window still open?" };
+
+  if (!res || !res.ok) {
+    $("error").hidden = false;
+    $("error").textContent = data.error;
+    if (res && res.status === 400) checkKey();
+    finish();
+    return;
+  }
+
+  job = { id: data.id, status: "queued", step: null };
+  render();
+  pollTimer = setInterval(poll, 1000);
+  tickTimer = setInterval(renderSteps, 1000);
+});
+
+$("copy-summary").addEventListener("click", (e) => copy(e.target, summaryText(job.video, job.summary)));
+$("copy-transcript").addEventListener("click", (e) => copy(e.target, job.transcript));
+$("toggle-transcript").addEventListener("click", () => {
+  const show = $("transcript").hidden;
+  $("transcript").hidden = !show;
+  $("copy-transcript").hidden = !show;
+  $("toggle-transcript").textContent = show ? "Hide transcript" : "Show transcript";
+});
+
+async function checkKey() {
+  try {
+    const { has_key } = await (await fetch("/api/status")).json();
+    $("no-key").hidden = has_key;
+  } catch {}
+}
+checkKey();
+</script>
+</body>
+</html>
